@@ -5,9 +5,10 @@
         "build": "tsc",
         "watch": "tsc -w",
         "test": "jest",
-        "bootstrap": "cdk bootstrap",
-        "deploy": "cdk deploy",
-        "destroy": "cdk destroy"
+        "test:coverage": "jest --coverage",
+        "stack:bootstrap": "cdk bootstrap",
+        "stack:deploy": "cdk deploy",
+        "stack:destroy": "cdk destroy"
     },
     "dependencies": {
         "@types/jest": "^29.5.12",
