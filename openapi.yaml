@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+    title: Rs School Task 3 - OpenAPI 3.0
+tags:
+    - name: products
+      description: Everything about products
+paths:
+    /products:
+        get:
+            tags:
+                - products
+            summary: Get list of all products
+            description: Get products list
+            responses:
+                '200':
+                    description: List of all products
+
+    /products/{id}:
+        get:
+            tags:
+                - pet
+            summary: Finds one product by it's id
+            description: Get product by id
+            parameters:
+                - name: productId
+                  in: path
+                  required: true
+                  description: Parameter description in CommonMark or HTML.
+                  schema:
+                      type: integer
+                      format: int64
+                      minimum: 1
+            responses:
+                '200':
+                    description: successful operation
+                '404':
+                    description: Product not found
