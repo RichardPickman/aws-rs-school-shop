@@ -1,6 +1,7 @@
 openapi: 3.0.3
 info:
     title: Rs School Task 3 - OpenAPI 3.0
+    version: 0.0.1
 tags:
     - name: products
       description: Everything about products
@@ -15,10 +16,10 @@ paths:
                 '200':
                     description: List of all products
 
-    /products/{id}:
+    /products/{productId}:
         get:
             tags:
-                - pet
+                - products
             summary: Finds one product by it's id
             description: Get product by id
             parameters:
