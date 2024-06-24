@@ -1,6 +1,7 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import path from 'path';
@@ -12,7 +13,7 @@ export class ProductsServiceStack extends Stack {
 
         const productsTable = new Table(this, PRODUCTS_TABLE_NAME, {
             tableName: PRODUCTS_TABLE_NAME,
-            partitionKey: { name: 'id', type: AttributeType.STRING },
+            partitionKey: { name: 'id', type: AttributeType.NUMBER },
             removalPolicy: RemovalPolicy.DESTROY,
         });
 
@@ -20,9 +21,14 @@ export class ProductsServiceStack extends Stack {
             tableName: STOCK_TABLE_NAME,
             partitionKey: {
                 name: 'product_id',
-                type: AttributeType.STRING,
+                type: AttributeType.NUMBER,
             },
             removalPolicy: RemovalPolicy.DESTROY,
+        });
+
+        const dbPolicy = new PolicyStatement({
+            actions: ['dynamodb:Scan', 'dynamodb:GetItem', 'dynamodb:PutItem'],
+            resources: [productsTable.tableArn, stocksTable.tableArn],
         });
 
         const getProductById = new Function(this, 'GetProductByIdHandler', {
@@ -42,6 +48,10 @@ export class ProductsServiceStack extends Stack {
             code: Code.fromAsset(path.join(__dirname, '../lambda')),
             handler: 'createProduct.handler',
         });
+
+        getProductById.addToRolePolicy(dbPolicy);
+        getProductsList.addToRolePolicy(dbPolicy);
+        createProduct.addToRolePolicy(dbPolicy);
 
         const api = new RestApi(this, 'ProductsService', {
             restApiName: 'ProductsService',
