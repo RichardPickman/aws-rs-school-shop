@@ -1,10 +1,11 @@
 import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { PRODUCTS_TABLE_NAME } from '../constants';
 
 const client = new DynamoDBClient();
 const docClient = DynamoDBDocumentClient.from(client);
+
+export const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
     const command = new ScanCommand({

@@ -1,15 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
-import { PRODUCTS_TABLE_NAME } from '../constants';
 
-const client = new DynamoDBClient({});
+const client = new DynamoDBClient();
 const docClient = DynamoDBDocumentClient.from(client);
 
-export const handler = async (event: APIGatewayProxyEvent) => {
-    const { id, title, description, price } = JSON.parse(event.body || '{}');
+export const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
 
-    if (!id || !title || !description || !price) {
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const { id, name, description, price } = JSON.parse(event.body || '{}');
+
+    if (!id || !name || !description || !price) {
         return {
             statusCode: 400,
             headers: {
@@ -25,7 +26,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         TableName: PRODUCTS_TABLE_NAME,
         Item: {
             id,
-            title,
+            name,
             description,
             price,
         },
@@ -43,7 +44,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
             },
             body: JSON.stringify({ message: 'Product successfully created' }),
         };
-    } catch (error: unknown) {
+    } catch (err: unknown) {
+        const error = err as { message: string };
         return {
             statusCode: 500,
             headers: {
@@ -52,7 +54,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
                 'Access-Control-Allow-Methods': 'POST',
             },
             body: JSON.stringify({
-                message: 'Unknown occured while creating product',
+                message: error.message,
             }),
         };
     }
