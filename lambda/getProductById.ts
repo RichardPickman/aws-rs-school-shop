@@ -1,28 +1,79 @@
-import { APIGatewayEvent } from 'aws-lambda';
-import { products } from './products';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import { PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME } from '../constants';
 
-export async function handler(event: Partial<APIGatewayEvent>) {
-    const product = products.find((product) => product.id === Number(event.pathParameters?.id));
+const client = new DynamoDBClient();
+const docClient = DynamoDBDocumentClient.from(client);
 
-    if (!product) {
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const productId = event.pathParameters?.productId;
+
+    if (!productId) {
         return {
-            statusCode: 404,
+            statusCode: 400,
             headers: {
-                'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: 'Product not found' }),
+            body: JSON.stringify({ message: 'productId and title are required' }),
         };
     }
 
-    return {
-        statusCode: 200,
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET',
+    const getProductCommand = new GetCommand({
+        TableName: PRODUCTS_TABLE_NAME,
+        Key: {
+            id: productId,
         },
-        body: JSON.stringify(product),
-    };
-}
+    });
+    const stockGetCommand = new GetCommand({
+        TableName: STOCK_TABLE_NAME,
+        Key: {
+            product_id: productId,
+        },
+    });
+
+    try {
+        const productResponse = await docClient.send(getProductCommand);
+
+        if (!productResponse) {
+            return {
+                statusCode: 404,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST',
+                },
+                body: JSON.stringify({ message: 'Product not found' }),
+            };
+        }
+
+        const stockResponse = await docClient.send(stockGetCommand);
+
+        return {
+            statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ...productResponse.Item, count: stockResponse.Item?.count || 0 }),
+        };
+    } catch (error: unknown) {
+        return {
+            statusCode: 500,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: 'Unknown occured while getting product',
+            }),
+        };
+    }
+};
