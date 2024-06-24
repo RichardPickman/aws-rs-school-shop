@@ -8,7 +8,8 @@
         "test:coverage": "jest --coverage",
         "stack:bootstrap": "cdk bootstrap",
         "stack:deploy": "cdk deploy",
-        "stack:destroy": "cdk destroy"
+        "stack:destroy": "cdk destroy",
+        "stack:synth": "cdk synth"
     },
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.602.0",
