@@ -2,7 +2,8 @@ import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import path from 'path';
 import { PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME } from '../constants';
@@ -31,22 +32,51 @@ export class ProductsServiceStack extends Stack {
             resources: [productsTable.tableArn, stocksTable.tableArn],
         });
 
-        const getProductById = new Function(this, 'GetProductByIdHandler', {
+        const rootDir = path.join(__dirname, '..');
+
+        const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
             runtime: Runtime.NODEJS_20_X,
-            code: Code.fromAsset(path.join(__dirname, '../lambda')),
-            handler: 'getProductById.handler',
+            projectRoot: rootDir,
+            entry: path.join(rootDir, '/lambda/getProductById.ts'),
+            depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
+            bundling: {
+                externalModules: ['aws-sdk'],
+                minify: false,
+            },
+            environment: {
+                PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
+                STOCK_TABLE_NAME: STOCK_TABLE_NAME,
+            },
         });
 
-        const getProductsList = new Function(this, 'GetProductsHandler', {
+        const getProductsList = new NodejsFunction(this, 'GetProductsHandler', {
             runtime: Runtime.NODEJS_20_X,
-            code: Code.fromAsset(path.join(__dirname, '../lambda')),
-            handler: 'getProducts.handler',
+            projectRoot: rootDir,
+            entry: path.join(rootDir, '/lambda/getProducts.ts'),
+            depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
+            bundling: {
+                externalModules: ['aws-sdk'],
+                minify: false,
+            },
+            environment: {
+                PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
+                STOCK_TABLE_NAME: STOCK_TABLE_NAME,
+            },
         });
 
-        const createProduct = new Function(this, 'CreateProductHandler', {
+        const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
             runtime: Runtime.NODEJS_20_X,
-            code: Code.fromAsset(path.join(__dirname, '../lambda')),
-            handler: 'createProduct.handler',
+            projectRoot: rootDir,
+            entry: path.join(rootDir, '/lambda/createProduct.ts'),
+            depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
+            bundling: {
+                externalModules: ['aws-sdk'],
+                minify: false,
+            },
+            environment: {
+                PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
+                STOCK_TABLE_NAME: STOCK_TABLE_NAME,
+            },
         });
 
         getProductById.addToRolePolicy(dbPolicy);
