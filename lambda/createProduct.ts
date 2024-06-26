@@ -9,9 +9,9 @@ export const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
     const body = event.body ? JSON.parse(event.body) : {};
-    const { id, name, description, price } = body;
+    const { id, title, description, price } = body;
 
-    if (!id || !name || !description || !price) {
+    if (!id || !title || !description || !price) {
         return {
             statusCode: 400,
             headers: {
@@ -27,7 +27,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         TableName: PRODUCTS_TABLE_NAME,
         Item: {
             id,
-            name,
+            title,
             description,
             price,
         },

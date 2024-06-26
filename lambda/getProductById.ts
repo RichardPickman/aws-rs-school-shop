@@ -11,6 +11,8 @@ const docClient = DynamoDBDocumentClient.from(client);
 export const handler = async (event: APIGatewayProxyEvent) => {
     const productId = event.pathParameters?.id;
 
+    console.log(event);
+
     if (!productId) {
         return {
             statusCode: 400,

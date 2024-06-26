@@ -1,9 +1,9 @@
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
-import { Product } from "../types";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { STOCK_TABLE_NAME } from "../constants";
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { products } from "./products";
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import { STOCK_TABLE_NAME } from '../constants';
+import { Product } from '../types';
+import { products } from './products';
 
 export const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
 
@@ -30,16 +30,16 @@ export const createStock = async (id: number) => {
 
         return { message: error.message };
     }
-}
+};
 
 export const createItem = async (item: Product) => {
-    const { id, name, description, price } = item;
+    const { id, title, description, price } = item;
 
     const productCommand = new PutCommand({
         TableName: PRODUCTS_TABLE_NAME,
         Item: {
             id,
-            name,
+            title,
             description,
             price,
         },
@@ -51,8 +51,7 @@ export const createItem = async (item: Product) => {
     return {
         ...item,
         count: stock.count ?? 0,
-    }
-    
+    };
 };
 
 export const handler = async (event: APIGatewayProxyEvent) => {
@@ -60,7 +59,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         const product = await createItem(item);
 
         return product;
-    })
+    });
 
     const result = await Promise.all(promisedItems);
 
