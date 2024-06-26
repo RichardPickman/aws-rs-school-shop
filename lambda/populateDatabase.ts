@@ -1,6 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { randomUUID } from 'crypto';
 import { STOCK_TABLE_NAME } from '../constants';
 import { Product } from '../types';
 import { products } from './products';
@@ -10,7 +11,7 @@ export const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
 const client = new DynamoDBClient();
 const docClient = DynamoDBDocumentClient.from(client);
 
-export const createStock = async (id: number) => {
+export const createStock = async (id: string) => {
     const count = Math.floor(Math.random() * 100);
 
     const stockCommand = new PutCommand({
@@ -32,8 +33,9 @@ export const createStock = async (id: number) => {
     }
 };
 
-export const createItem = async (item: Product) => {
-    const { id, title, description, price } = item;
+export const createItem = async (item: Omit<Product, 'id'>) => {
+    const { title, description, price } = item;
+    const id = randomUUID();
 
     const productCommand = new PutCommand({
         TableName: PRODUCTS_TABLE_NAME,

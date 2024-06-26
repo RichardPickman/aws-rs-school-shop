@@ -1,6 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { randomUUID } from 'crypto';
 
 const client = new DynamoDBClient();
 const docClient = DynamoDBDocumentClient.from(client);
@@ -11,9 +12,9 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     console.log('Creating product with provided data: ', event.body);
 
     const body = event.body ? JSON.parse(event.body) : {};
-    const { id, title, description, price } = body;
+    const { title, description, price } = body;
 
-    if (!id || !title || !description || !price) {
+    if (!title || !description || !price) {
         return {
             statusCode: 400,
             headers: {
@@ -28,7 +29,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     const product = new PutCommand({
         TableName: PRODUCTS_TABLE_NAME,
         Item: {
-            id,
+            id: randomUUID(),
             title,
             description,
             price,
