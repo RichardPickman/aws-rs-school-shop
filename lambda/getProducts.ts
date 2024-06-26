@@ -59,6 +59,6 @@ export const handler = async () => {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET',
         },
-        body: JSON.stringify({ ...result }),
+        body: JSON.stringify(result),
     };
 };
