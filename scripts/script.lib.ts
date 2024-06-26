@@ -37,62 +37,80 @@ export class ProductsServiceStack extends Stack {
         const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
             runtime: Runtime.NODEJS_20_X,
             projectRoot: rootDir,
-            entry: path.join(rootDir, '/lambda/getProductById.ts'),
             depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
-            bundling: {
-                externalModules: ['aws-sdk'],
-                minify: false,
-            },
             environment: {
                 PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
                 STOCK_TABLE_NAME: STOCK_TABLE_NAME,
             },
+            bundling: {
+                externalModules: ['aws-sdk'],
+                minify: false,
+            },
+            entry: path.join(rootDir, '/lambda/getProductById.ts'),
         });
 
         const getProductsList = new NodejsFunction(this, 'GetProductsHandler', {
             runtime: Runtime.NODEJS_20_X,
             projectRoot: rootDir,
-            entry: path.join(rootDir, '/lambda/getProducts.ts'),
             depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
-            bundling: {
-                externalModules: ['aws-sdk'],
-                minify: false,
-            },
             environment: {
                 PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
                 STOCK_TABLE_NAME: STOCK_TABLE_NAME,
             },
+            bundling: {
+                externalModules: ['aws-sdk'],
+                minify: false,
+            },
+            entry: path.join(rootDir, '/lambda/getProducts.ts'),
         });
 
         const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
             runtime: Runtime.NODEJS_20_X,
             projectRoot: rootDir,
-            entry: path.join(rootDir, '/lambda/createProduct.ts'),
             depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
-            bundling: {
-                externalModules: ['aws-sdk'],
-                minify: false,
-            },
             environment: {
                 PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
                 STOCK_TABLE_NAME: STOCK_TABLE_NAME,
             },
+            bundling: {
+                externalModules: ['aws-sdk'],
+                minify: false,
+            },
+            entry: path.join(rootDir, '/lambda/createProduct.ts'),
+        });
+
+        const populateProduct = new NodejsFunction(this, 'PopulateProductHandler', {
+            runtime: Runtime.NODEJS_20_X,
+            projectRoot: rootDir,
+            depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
+            environment: {
+                PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
+                STOCK_TABLE_NAME: STOCK_TABLE_NAME,
+            },
+            bundling: {
+                externalModules: ['aws-sdk'],
+                minify: false,
+            },
+            entry: path.join(rootDir, '/lambda/populateDatabase.ts'),
         });
 
         getProductById.addToRolePolicy(dbPolicy);
         getProductsList.addToRolePolicy(dbPolicy);
         createProduct.addToRolePolicy(dbPolicy);
+        populateProduct.addToRolePolicy(dbPolicy);
 
         const api = new RestApi(this, 'ProductsService', {
             restApiName: 'ProductsService',
         });
 
         const productsEndpoit = api.root.addResource('products');
+        const populateEndpoit = api.root.addResource('populate');
         const productByIdEndpoint = productsEndpoit.addResource('{id}');
 
         productsEndpoit.addMethod('POST', new LambdaIntegration(createProduct));
         productsEndpoit.addMethod('GET', new LambdaIntegration(getProductsList));
         productByIdEndpoint.addMethod('GET', new LambdaIntegration(getProductById));
+        populateEndpoit.addMethod('POST', new LambdaIntegration(populateProduct));
 
         new CfnOutput(this, 'Products table', { value: productsTable.tableName });
         new CfnOutput(this, 'Stock table', { value: stocksTable.tableName });
