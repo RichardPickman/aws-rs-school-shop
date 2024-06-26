@@ -105,7 +105,7 @@ export class ProductsServiceStack extends Stack {
 
         const productsEndpoit = api.root.addResource('products');
         const populateEndpoit = api.root.addResource('populate');
-        const productByIdEndpoint = productsEndpoit.addResource('{id}');
+        const productByIdEndpoint = productsEndpoit.addResource('{productId}');
 
         productsEndpoit.addMethod('POST', new LambdaIntegration(createProduct));
         productsEndpoit.addMethod('GET', new LambdaIntegration(getProductsList));
