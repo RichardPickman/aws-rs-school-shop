@@ -9,9 +9,9 @@ const client = new DynamoDBClient();
 const docClient = DynamoDBDocumentClient.from(client);
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-    const productId = Number(event.pathParameters?.productId);
+    console.log('Getting product by id', event.pathParameters?.productId);
 
-    console.log(event);
+    const productId = Number(event.pathParameters?.productId);
 
     if (!productId) {
         return {

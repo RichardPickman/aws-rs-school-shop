@@ -8,6 +8,8 @@ const docClient = DynamoDBDocumentClient.from(client);
 export const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
+    console.log('Creating product with provided data: ', event.body);
+
     const body = event.body ? JSON.parse(event.body) : {};
     const { id, title, description, price } = body;
 

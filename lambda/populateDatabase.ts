@@ -55,6 +55,8 @@ export const createItem = async (item: Product) => {
 };
 
 export const handler = async (event: APIGatewayProxyEvent) => {
+    console.log('Populating database');
+
     const promisedItems = products.map(async (item) => {
         const product = await createItem(item);
 
