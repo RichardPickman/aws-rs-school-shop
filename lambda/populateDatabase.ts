@@ -16,7 +16,7 @@ export const createProduct = async (item: Omit<Product, 'id'>) => {
     const id = randomUUID();
     const count = Math.floor(Math.random() * 100);
 
-    const command: TransactWriteCommandInput = {
+    const transactInput: TransactWriteCommandInput = {
         TransactItems: [
             {
                 Put: {
@@ -41,7 +41,7 @@ export const createProduct = async (item: Omit<Product, 'id'>) => {
         ],
     };
 
-    const transaction = new TransactWriteCommand(command);
+    const transaction = new TransactWriteCommand(transactInput);
     const product = await docClient.send(transaction);
 
     return {
