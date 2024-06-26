@@ -14,7 +14,7 @@ export class ProductsServiceStack extends Stack {
 
         const productsTable = new Table(this, PRODUCTS_TABLE_NAME, {
             tableName: PRODUCTS_TABLE_NAME,
-            partitionKey: { name: 'id', type: AttributeType.NUMBER },
+            partitionKey: { name: 'id', type: AttributeType.STRING },
             removalPolicy: RemovalPolicy.DESTROY,
         });
 
@@ -22,7 +22,7 @@ export class ProductsServiceStack extends Stack {
             tableName: STOCK_TABLE_NAME,
             partitionKey: {
                 name: 'product_id',
-                type: AttributeType.NUMBER,
+                type: AttributeType.STRING,
             },
             removalPolicy: RemovalPolicy.DESTROY,
         });
