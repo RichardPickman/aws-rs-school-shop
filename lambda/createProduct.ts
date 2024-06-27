@@ -20,11 +20,6 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     if (!title || !description || !price || !count) {
         const missing = requiredFields.filter((key) => !body[key]);
 
-        console.log(
-            Object.keys(body),
-            Object.keys(body).filter((key) => !body[key]),
-        );
-
         return {
             statusCode: 400,
             headers: {
