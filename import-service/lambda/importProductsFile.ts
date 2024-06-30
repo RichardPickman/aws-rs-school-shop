@@ -4,11 +4,23 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 const BUCKET_NAME = process.env.BUCKET_NAME || '';
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+export const handler = async (event: Partial<APIGatewayProxyEvent>) => {
     console.log('Creating a signed url: ', event.body);
 
     const s3Client = new S3Client();
     const name = event.queryStringParameters?.name;
+
+    if (!name) {
+        return {
+            statusCode: 400,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST',
+            },
+            body: JSON.stringify({ message: 'Missing name parameter' }),
+        };
+    }
 
     const getObjectCommand = new GetObjectCommand({
         Bucket: BUCKET_NAME,

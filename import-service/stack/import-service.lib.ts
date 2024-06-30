@@ -13,12 +13,12 @@ export class ImportServiceStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        const rootDir = path.join(__dirname, '..');
+        const rootDir = path.join(__dirname, '../../');
 
         const importProductsFile = new NodejsFunction(this, 'ImportProductsFile', {
             runtime: Runtime.NODEJS_20_X,
             projectRoot: rootDir,
-            entry: path.join(rootDir, '/lambda/importProductsFile.ts'),
+            entry: path.join(rootDir, '/import-service/lambda/importProductsFile.ts'),
             depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
             environment: {
                 BUCKET_NAME: IMPORT_BUCKET_NAME,
@@ -32,7 +32,7 @@ export class ImportServiceStack extends Stack {
         const importFileParser = new NodejsFunction(this, 'ImportFileParser', {
             runtime: Runtime.NODEJS_20_X,
             projectRoot: rootDir,
-            entry: path.join(rootDir, '/lambda/importFileParser.ts'),
+            entry: path.join(rootDir, '/import-service/lambda/importFileParser.ts'),
             depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
             bundling: {
                 externalModules: ['aws-sdk'],

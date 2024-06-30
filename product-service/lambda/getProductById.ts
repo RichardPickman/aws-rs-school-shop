@@ -8,7 +8,7 @@ export const STOCK_TABLE_NAME = process.env.STOCK_TABLE_NAME || '';
 const client = new DynamoDBClient();
 const docClient = DynamoDBDocumentClient.from(client);
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+export const handler = async (event: Partial<APIGatewayProxyEvent>) => {
     console.log('Getting product by id', event.pathParameters?.productId);
 
     const productId = event.pathParameters?.productId;
