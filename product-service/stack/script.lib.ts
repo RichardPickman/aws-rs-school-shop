@@ -6,7 +6,7 @@ import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import path from 'path';
-import { PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME } from '../constants';
+import { PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME } from '../../constants';
 
 export class ProductsServiceStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
