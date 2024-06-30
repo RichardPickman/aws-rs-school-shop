@@ -9,8 +9,6 @@ export const handler = async (event: S3Event) => {
     const client = new S3Client();
     const records = event.Records.filter((record) => record.s3.object.key.startsWith('uploaded/'));
 
-    console.log(JSON.stringify(records));
-
     for (const record of records) {
         const bucket = record.s3.bucket.name;
         const key = record.s3.object.key;
