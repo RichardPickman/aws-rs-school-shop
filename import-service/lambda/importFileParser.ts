@@ -57,6 +57,13 @@ export const handler = async (event: S3Event) => {
     for (const record of records) {
         const bucket = record.s3.bucket.name;
         const key = record.s3.object.key;
+
+        if (!key.endsWith('.csv')) {
+            console.log('File is not a csv file');
+
+            continue;
+        }
+
         const response = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
 
         if (!response.Body) {
