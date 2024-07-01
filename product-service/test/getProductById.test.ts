@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { handler } from '../lambda/getProductById';
 import { products } from '../lambda/products';
 
@@ -19,7 +20,7 @@ describe('getProductById', () => {
     it('should return product if found', async () => {
         const event = {
             pathParameters: {
-                id: String(products[0].id),
+                id: randomUUID(),
             },
             httpMethod: 'GET',
         };
