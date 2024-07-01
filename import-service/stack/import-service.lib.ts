@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -38,17 +38,19 @@ export class ImportServiceStack extends Stack {
                 externalModules: ['aws-sdk'],
                 minify: false,
             },
+            timeout: Duration.seconds(10),
         });
 
         const bucket = Bucket.fromBucketName(this, 'ImportBucket', IMPORT_BUCKET_NAME);
-
-        const putPolicy = new PolicyStatement({
-            actions: ['s3:PutObject', 's3:GetObject', 's3:ListBucket', 's3:DeleteObject'],
-            resources: [bucket.bucketArn + '/uploaded/*'],
+        const bucketPolicy = new PolicyStatement({
+            actions: ['s3:PutObject', 's3:GetObject', 's3:ListBucket', 's3:DeleteObject', 's3:CopyObject'],
+            resources: [`${bucket.bucketArn}`, `${bucket.bucketArn}/*`],
         });
 
+        importProductsFile.addToRolePolicy(bucketPolicy);
+        importFileParser.addToRolePolicy(bucketPolicy);
+
         bucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(importFileParser));
-        importProductsFile.addToRolePolicy(putPolicy);
 
         const api = new RestApi(this, 'ImportService', {
             restApiName: 'ImportService',
