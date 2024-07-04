@@ -44,9 +44,6 @@ importers:
       aws-lambda:
         specifier: ^1.0.7
         version: 1.0.7
-      aws-sdk-client-mock:
-        specifier: ^4.0.1
-        version: 4.0.1
       constructs:
         specifier: ^10.3.0
         version: 10.3.0
@@ -69,6 +66,9 @@ importers:
       '@types/aws-lambda':
         specifier: ^8.10.138
         version: 8.10.138
+      aws-sdk-client-mock:
+        specifier: ^4.0.1
+        version: 4.0.1
 
 packages:
 
@@ -2182,7 +2182,7 @@ snapshots:
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/client-sso-oidc': 3.600.0(@aws-sdk/client-sts@3.600.0)
+      '@aws-sdk/client-sso-oidc': 3.600.0
       '@aws-sdk/client-sts': 3.600.0
       '@aws-sdk/core': 3.598.0
       '@aws-sdk/credential-provider-node': 3.600.0(@aws-sdk/client-sso-oidc@3.600.0)(@aws-sdk/client-sts@3.600.0)
@@ -3282,7 +3282,7 @@ snapshots:
 
   '@aws-sdk/token-providers@3.598.0(@aws-sdk/client-sso-oidc@3.600.0)':
     dependencies:
-      '@aws-sdk/client-sso-oidc': 3.600.0(@aws-sdk/client-sts@3.600.0)
+      '@aws-sdk/client-sso-oidc': 3.600.0
       '@aws-sdk/types': 3.598.0
       '@smithy/property-provider': 3.1.2
       '@smithy/shared-ini-file-loader': 3.1.2
