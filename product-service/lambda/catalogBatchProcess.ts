@@ -26,22 +26,32 @@ export const handler = async (event: SQSEvent) => {
 
         console.log(`Processing ${title}...`);
 
-        const productCommand = new PutCommand({
-            TableName: PRODUCTS_TABLE_NAME,
-            Item: {
-                id: randomUUID(),
-                title,
-                description,
-                price,
-                stock,
-            },
-        });
+        try {
+            const productCommand = new PutCommand({
+                TableName: PRODUCTS_TABLE_NAME,
+                Item: {
+                    id: randomUUID(),
+                    title,
+                    description,
+                    price,
+                    stock,
+                },
+            });
 
-        console.log('Sending product command with title: ', title);
+            console.log('Sending product command with title: ', title);
 
-        await docClient.send(productCommand);
+            await docClient.send(productCommand);
 
-        console.log('Product ' + title + ' created');
+            console.log('Product ' + title + ' created');
+        } catch (err: unknown) {
+            const error = err as { message: string };
+            return {
+                statusCode: 500,
+                body: JSON.stringify({
+                    message: 'Error processing event: ' + error.message,
+                }),
+            };
+        }
     }
 
     console.log('Products created');
