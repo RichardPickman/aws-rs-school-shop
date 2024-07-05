@@ -6,7 +6,7 @@ import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import path from 'path';
-import { PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME } from '../constants';
+import { PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME } from '../../constants';
 
 export class ProductsServiceStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -32,7 +32,7 @@ export class ProductsServiceStack extends Stack {
             resources: [productsTable.tableArn, stocksTable.tableArn],
         });
 
-        const rootDir = path.join(__dirname, '..');
+        const rootDir = path.join(__dirname, '../../');
 
         const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
             runtime: Runtime.NODEJS_20_X,
@@ -46,7 +46,7 @@ export class ProductsServiceStack extends Stack {
                 externalModules: ['aws-sdk'],
                 minify: false,
             },
-            entry: path.join(rootDir, '/lambda/getProductById.ts'),
+            entry: path.join(rootDir, '/product-service/lambda/getProductById.ts'),
         });
 
         const getProductsList = new NodejsFunction(this, 'GetProductsHandler', {
@@ -61,7 +61,7 @@ export class ProductsServiceStack extends Stack {
                 externalModules: ['aws-sdk'],
                 minify: false,
             },
-            entry: path.join(rootDir, '/lambda/getProducts.ts'),
+            entry: path.join(rootDir, '/product-service/lambda/getProducts.ts'),
         });
 
         const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
@@ -76,7 +76,7 @@ export class ProductsServiceStack extends Stack {
                 externalModules: ['aws-sdk'],
                 minify: false,
             },
-            entry: path.join(rootDir, '/lambda/createProduct.ts'),
+            entry: path.join(rootDir, '/product-service/lambda/createProduct.ts'),
         });
 
         const populateProduct = new NodejsFunction(this, 'PopulateProductHandler', {
@@ -91,7 +91,7 @@ export class ProductsServiceStack extends Stack {
                 externalModules: ['aws-sdk'],
                 minify: false,
             },
-            entry: path.join(rootDir, '/lambda/populateDatabase.ts'),
+            entry: path.join(rootDir, '/product-service/lambda/populateDatabase.ts'),
         });
 
         getProductById.addToRolePolicy(dbPolicy);
