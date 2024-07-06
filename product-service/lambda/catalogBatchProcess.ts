@@ -44,13 +44,7 @@ export const handler = async (event: SQSEvent) => {
 
             console.log('Product ' + title + ' created');
         } catch (err: unknown) {
-            const error = err as { message: string };
-            return {
-                statusCode: 500,
-                body: JSON.stringify({
-                    message: 'Error processing event: ' + error.message,
-                }),
-            };
+            console.error('Error processing product: ', err);
         }
     }
 
