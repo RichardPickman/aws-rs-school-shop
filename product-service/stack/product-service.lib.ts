@@ -5,7 +5,7 @@ import { AccountPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { Topic } from 'aws-cdk-lib/aws-sns';
+import { SubscriptionFilter, Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
@@ -117,8 +117,25 @@ export class ProductsServiceStack extends Stack {
         populateProductHandler.addToRolePolicy(dbPolicy);
         catalogItemsHandler.addToRolePolicy(dbPolicy);
 
-        // Add subscription to the topic.
+        // Add mine email as subscription to the topic.
         createProductTopic.addSubscription(new EmailSubscription(SUBSCRIPTION_EMAIL));
+
+        // Add subscriptions to the topic for all emails.
+        const emails = ['test@test.com', 'test2@test.com'];
+
+        createProductTopic.addSubscription(new EmailSubscription(SUBSCRIPTION_EMAIL));
+
+        for (const email of emails) {
+            createProductTopic.addSubscription(
+                new EmailSubscription(email, {
+                    filterPolicy: {
+                        price: SubscriptionFilter.numericFilter({
+                            between: { start: 10, stop: 1000 },
+                        }),
+                    },
+                }),
+            );
+        }
 
         // API Gateway.
         const api = new RestApi(this, 'ProductsService', {
