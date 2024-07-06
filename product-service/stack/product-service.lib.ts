@@ -55,27 +55,27 @@ export class ProductsServiceStack extends Stack {
         });
 
         // Lambda functions.
-        const getProductById = new NodejsFunction(this, 'GetProductByIdHandler', {
+        const getProductByIdHandler = new NodejsFunction(this, 'GetProductByIdHandler', {
             ...commonLambdaProps,
             entry: path.join(rootDir, '/product-service/lambda/getProductById.ts'),
         });
 
-        const getProductsList = new NodejsFunction(this, 'GetProductsHandler', {
+        const getProductsListHandler = new NodejsFunction(this, 'GetProductsHandler', {
             ...commonLambdaProps,
             entry: path.join(rootDir, '/product-service/lambda/getProducts.ts'),
         });
 
-        const createProduct = new NodejsFunction(this, 'CreateProductHandler', {
+        const createProductHandler = new NodejsFunction(this, 'CreateProductHandler', {
             ...commonLambdaProps,
             entry: path.join(rootDir, '/product-service/lambda/createProduct.ts'),
         });
 
-        const populateProduct = new NodejsFunction(this, 'PopulateProductHandler', {
+        const populateProductHandler = new NodejsFunction(this, 'PopulateProductHandler', {
             ...commonLambdaProps,
             entry: path.join(rootDir, '/product-service/lambda/populateDatabase.ts'),
         });
 
-        const catalogItems = new NodejsFunction(this, 'CatalogItemsHandler', {
+        const catalogItemsHandler = new NodejsFunction(this, 'CatalogItemsHandler', {
             ...commonLambdaProps,
             environment: {
                 ...commonLambdaProps.environment,
@@ -107,15 +107,15 @@ export class ProductsServiceStack extends Stack {
         });
 
         // Event source for the catalog items.
-        catalogItems.addEventSource(new SqsEventSource(catalogItemsQueue, { batchSize: 5 }));
+        catalogItemsHandler.addEventSource(new SqsEventSource(catalogItemsQueue, { batchSize: 5 }));
 
         // Add permissions to the lambda functions.
         createProductTopic.addToResourcePolicy(productTopicPolicy);
-        getProductById.addToRolePolicy(dbPolicy);
-        getProductsList.addToRolePolicy(dbPolicy);
-        createProduct.addToRolePolicy(dbPolicy);
-        populateProduct.addToRolePolicy(dbPolicy);
-        catalogItems.addToRolePolicy(dbPolicy);
+        getProductByIdHandler.addToRolePolicy(dbPolicy);
+        getProductsListHandler.addToRolePolicy(dbPolicy);
+        createProductHandler.addToRolePolicy(dbPolicy);
+        populateProductHandler.addToRolePolicy(dbPolicy);
+        catalogItemsHandler.addToRolePolicy(dbPolicy);
 
         // Add subscription to the topic.
         createProductTopic.addSubscription(new EmailSubscription(SUBSCRIPTION_EMAIL));
@@ -131,10 +131,10 @@ export class ProductsServiceStack extends Stack {
         const productByIdEndpoint = productsEndpoit.addResource('{productId}');
 
         // API Gateway methods.
-        productsEndpoit.addMethod('POST', new LambdaIntegration(createProduct));
-        productsEndpoit.addMethod('GET', new LambdaIntegration(getProductsList));
-        productByIdEndpoint.addMethod('GET', new LambdaIntegration(getProductById));
-        populateEndpoit.addMethod('POST', new LambdaIntegration(populateProduct));
+        productsEndpoit.addMethod('POST', new LambdaIntegration(createProductHandler));
+        productsEndpoit.addMethod('GET', new LambdaIntegration(getProductsListHandler));
+        productByIdEndpoint.addMethod('GET', new LambdaIntegration(getProductByIdHandler));
+        populateEndpoit.addMethod('POST', new LambdaIntegration(populateProductHandler));
 
         // Outputs.
         new CfnOutput(this, 'Products table', { value: productsTable.tableName });
