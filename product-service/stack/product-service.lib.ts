@@ -57,22 +57,22 @@ export class ProductsServiceStack extends Stack {
         // Lambda functions.
         const getProductByIdHandler = new NodejsFunction(this, 'GetProductByIdHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, '/product-service/lambda/getProductById.ts'),
+            entry: path.join(rootDir, 'product-service', 'lambda', 'getProductById.ts'),
         });
 
         const getProductsListHandler = new NodejsFunction(this, 'GetProductsHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, '/product-service/lambda/getProducts.ts'),
+            entry: path.join(rootDir, 'product-service', 'lambda', 'getProducts.ts'),
         });
 
         const createProductHandler = new NodejsFunction(this, 'CreateProductHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, '/product-service/lambda/createProduct.ts'),
+            entry: path.join(rootDir, 'product-service', 'lambda', 'createProduct.ts'),
         });
 
         const populateProductHandler = new NodejsFunction(this, 'PopulateProductHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, '/product-service/lambda/populateDatabase.ts'),
+            entry: path.join(rootDir, 'product-service', 'lambda', 'populateDatabase.ts'),
         });
 
         const catalogItemsHandler = new NodejsFunction(this, 'CatalogItemsHandler', {
@@ -82,7 +82,7 @@ export class ProductsServiceStack extends Stack {
                 TOPIC_ARN: createProductTopic.topicArn,
                 SUBSCRIPTION_EMAIL: SUBSCRIPTION_EMAIL,
             },
-            entry: path.join(rootDir, '/product-service/lambda/catalogBatchProcess.ts'),
+            entry: path.join(rootDir, 'product-service', 'lambda', 'catalogBatchProcess.ts'),
         });
 
         // Queue for catalog items.
