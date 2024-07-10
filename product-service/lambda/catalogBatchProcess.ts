@@ -1,6 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { SNSClient, SubscribeCommand } from '@aws-sdk/client-sns';
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { SQSEvent } from 'aws-lambda';
 import { randomUUID } from 'crypto';
 import { Product } from '../../types';
@@ -8,6 +8,7 @@ import { Product } from '../../types';
 type RawProduct = Omit<Product, 'id'>;
 
 const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
+const STOCK_TABLE_NAME = process.env.STOCK_TABLE_NAME || '';
 const TOPIC_ARN = process.env.TOPIC_ARN || '';
 const SUBSCRIPTION_EMAIL = process.env.SUBSCRIPTION_EMAIL || '';
 
@@ -25,22 +26,37 @@ export const handler = async (event: SQSEvent) => {
         const { title, description, price, count } = product;
 
         console.log(`Processing ${title}...`);
+        const id = randomUUID();
 
         try {
-            const productCommand = new PutCommand({
-                TableName: PRODUCTS_TABLE_NAME,
-                Item: {
-                    id: randomUUID(),
-                    title,
-                    description,
-                    price,
-                    count,
-                },
+            const transcationCommand = new TransactWriteCommand({
+                TransactItems: [
+                    {
+                        Put: {
+                            TableName: PRODUCTS_TABLE_NAME,
+                            Item: {
+                                id,
+                                title,
+                                description,
+                                price,
+                            },
+                        },
+                    },
+                    {
+                        Put: {
+                            TableName: STOCK_TABLE_NAME,
+                            Item: {
+                                product_id: id,
+                                count,
+                            },
+                        },
+                    },
+                ],
             });
 
             console.log('Sending product command with title: ', title);
 
-            await docClient.send(productCommand);
+            await docClient.send(transcationCommand);
 
             console.log('Product ' + title + ' created');
         } catch (err: unknown) {
