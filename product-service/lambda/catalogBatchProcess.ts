@@ -22,7 +22,7 @@ export const handler = async (event: SQSEvent) => {
     const products: RawProduct[] = event.Records.map((record) => JSON.parse(record.body));
 
     for (const product of products) {
-        const { title, price, description, stock } = product;
+        const { title, description, price, count } = product;
 
         console.log(`Processing ${title}...`);
 
@@ -34,7 +34,7 @@ export const handler = async (event: SQSEvent) => {
                     title,
                     description,
                     price,
-                    stock,
+                    count,
                 },
             });
 

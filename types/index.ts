@@ -3,5 +3,5 @@ export interface Product {
     title: string;
     price: number;
     description: string;
-    stock: number;
+    count: number;
 }
