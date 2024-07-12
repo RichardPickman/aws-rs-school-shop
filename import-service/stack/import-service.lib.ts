@@ -7,7 +7,7 @@ import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import path from 'path';
-import { IMPORT_BUCKET_NAME } from '../../constants';
+import { CATALOG_QUEUE_URL, IMPORT_BUCKET_NAME, QUEUE_SQS_ARN } from '../../constants';
 
 export class ImportServiceStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -32,23 +32,33 @@ export class ImportServiceStack extends Stack {
         const importFileParser = new NodejsFunction(this, 'ImportFileParser', {
             runtime: Runtime.NODEJS_20_X,
             projectRoot: rootDir,
+            timeout: Duration.seconds(10),
             entry: path.join(rootDir, '/import-service/lambda/importFileParser.ts'),
             depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
             bundling: {
                 externalModules: ['aws-sdk'],
                 minify: false,
             },
-            timeout: Duration.seconds(10),
+            environment: {
+                CATALOG_QUEUE_URL: CATALOG_QUEUE_URL,
+            },
         });
 
         const bucket = Bucket.fromBucketName(this, 'ImportBucket', IMPORT_BUCKET_NAME);
+
         const bucketPolicy = new PolicyStatement({
             actions: ['s3:PutObject', 's3:GetObject', 's3:ListBucket', 's3:DeleteObject', 's3:CopyObject'],
             resources: [`${bucket.bucketArn}`, `${bucket.bucketArn}/*`],
         });
 
+        const queuePolicy = new PolicyStatement({
+            actions: ['sqs:SendMessage'],
+            resources: [QUEUE_SQS_ARN],
+        });
+
         importProductsFile.addToRolePolicy(bucketPolicy);
         importFileParser.addToRolePolicy(bucketPolicy);
+        importFileParser.addToRolePolicy(queuePolicy);
 
         bucket.addEventNotification(EventType.OBJECT_CREATED, new LambdaDestination(importFileParser));
 

@@ -5,18 +5,36 @@ import {
     GetObjectCommand,
     S3Client,
 } from '@aws-sdk/client-s3';
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { S3Event } from 'aws-lambda';
 import csvParser from 'csv-parser';
 import { Readable } from 'stream';
 
-const readStream = (stream: Readable) =>
-    new Promise<Error | void>((resolve, reject) => {
-        stream
-            .pipe(csvParser())
-            .on('data', (chunk) => console.log('Data: ', chunk))
-            .on('error', reject)
-            .on('end', () => resolve());
+const clientSqs = new SQSClient();
+
+const CATALOG_QUEUE_URL = process.env.CATALOG_QUEUE_URL || '';
+
+const createSqsItem = async (product: string) => {
+    console.log('Creating SQS item: ', product);
+
+    const SqsSendMessage = new SendMessageCommand({
+        QueueUrl: CATALOG_QUEUE_URL,
+        MessageBody: JSON.stringify(product),
     });
+
+    try {
+        await clientSqs.send(SqsSendMessage);
+
+        console.log('Successfully sent message to SQS');
+    } catch (err) {
+        console.log('Error occured while sending message to SQS: ', err);
+    }
+};
+
+const readStream = (stream: Readable) =>
+    new Promise<Error | void>((resolve, reject) =>
+        stream.pipe(csvParser()).on('data', createSqsItem).on('error', reject).on('end', resolve),
+    );
 
 const copyFileAndDeleteOriginal = async (bucket: string, key: string, client: S3Client) => {
     console.log('Preparing to copy file to parsed bucket with key: ', key);
