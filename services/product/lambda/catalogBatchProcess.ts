@@ -3,7 +3,7 @@ import { SNSClient, SubscribeCommand } from '@aws-sdk/client-sns';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { SQSEvent } from 'aws-lambda';
 import { randomUUID } from 'crypto';
-import { Product } from '../../types';
+import { Product } from '../../../types';
 
 type RawProduct = Omit<Product, 'id'>;
 
