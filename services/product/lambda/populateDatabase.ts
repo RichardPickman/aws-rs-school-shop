@@ -2,8 +2,8 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand, TransactWriteCommandInput } from '@aws-sdk/lib-dynamodb';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { randomUUID } from 'crypto';
-import { STOCK_TABLE_NAME } from '../../constants';
-import { Product } from '../../types';
+import { STOCK_TABLE_NAME } from '../../../constants';
+import { Product } from '../../../types';
 import { products } from './products';
 
 export const PRODUCTS_TABLE_NAME = process.env.PRODUCTS_TABLE_NAME || '';
