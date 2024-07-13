@@ -13,6 +13,7 @@ import path from 'path';
 import { PRINCIPAL_ID, PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME, SUBSCRIPTION_EMAIL } from '../../constants';
 
 const rootDir = path.join(__dirname, '../../');
+const lambdaPath = path.join(rootDir, 'services', 'product', 'lambda');
 
 const commonLambdaProps = {
     runtime: Runtime.NODEJS_20_X,
@@ -57,22 +58,22 @@ export class ProductsServiceStack extends Stack {
         // Lambda functions.
         const getProductByIdHandler = new NodejsFunction(this, 'GetProductByIdHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, 'product-service', 'lambda', 'getProductById.ts'),
+            entry: path.join(lambdaPath, 'getProductById.ts'),
         });
 
         const getProductsListHandler = new NodejsFunction(this, 'GetProductsHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, 'product-service', 'lambda', 'getProducts.ts'),
+            entry: path.join(lambdaPath, 'getProducts.ts'),
         });
 
         const createProductHandler = new NodejsFunction(this, 'CreateProductHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, 'product-service', 'lambda', 'createProduct.ts'),
+            entry: path.join(lambdaPath, 'createProduct.ts'),
         });
 
         const populateProductHandler = new NodejsFunction(this, 'PopulateProductHandler', {
             ...commonLambdaProps,
-            entry: path.join(rootDir, 'product-service', 'lambda', 'populateDatabase.ts'),
+            entry: path.join(lambdaPath, 'populateDatabase.ts'),
         });
 
         const catalogItemsHandler = new NodejsFunction(this, 'CatalogItemsHandler', {
@@ -82,7 +83,7 @@ export class ProductsServiceStack extends Stack {
                 TOPIC_ARN: createProductTopic.topicArn,
                 SUBSCRIPTION_EMAIL: SUBSCRIPTION_EMAIL,
             },
-            entry: path.join(rootDir, 'product-service', 'lambda', 'catalogBatchProcess.ts'),
+            entry: path.join(lambdaPath, 'catalogBatchProcess.ts'),
         });
 
         // Queue for catalog items.
@@ -117,8 +118,8 @@ export class ProductsServiceStack extends Stack {
         populateProductHandler.addToRolePolicy(dbPolicy);
         catalogItemsHandler.addToRolePolicy(dbPolicy);
 
-        // Add mine email as subscription to the topic.
-        createProductTopic.addSubscription(new EmailSubscription(SUBSCRIPTION_EMAIL));
+        // // Add mine email as subscription to the topic.
+        // createProductTopic.addSubscription(new EmailSubscription(SUBSCRIPTION_EMAIL));
 
         // Add subscriptions to the topic for all emails.
         const emails = ['test@test.com', 'test2@test.com'];

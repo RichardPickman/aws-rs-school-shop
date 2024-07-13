@@ -1,44 +1,33 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import path from 'path';
 import { CATALOG_QUEUE_URL, IMPORT_BUCKET_NAME, QUEUE_SQS_ARN } from '../../constants';
+import { commonLambdaProps, rootDir } from './helpers';
+
+const lambdaPath = path.join(rootDir, 'services', 'import', 'lambda');
 
 export class ImportServiceStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        const rootDir = path.join(__dirname, '../../');
-
         const importProductsFile = new NodejsFunction(this, 'ImportProductsFile', {
-            runtime: Runtime.NODEJS_20_X,
-            projectRoot: rootDir,
-            entry: path.join(rootDir, '/import-service/lambda/importProductsFile.ts'),
-            depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
+            ...commonLambdaProps,
+            entry: path.join(lambdaPath, 'importProductsFile.ts'),
             environment: {
+                ...commonLambdaProps.environment,
                 BUCKET_NAME: IMPORT_BUCKET_NAME,
-            },
-            bundling: {
-                externalModules: ['aws-sdk'],
-                minify: false,
             },
         });
 
         const importFileParser = new NodejsFunction(this, 'ImportFileParser', {
-            runtime: Runtime.NODEJS_20_X,
-            projectRoot: rootDir,
+            ...commonLambdaProps,
             timeout: Duration.seconds(10),
-            entry: path.join(rootDir, '/import-service/lambda/importFileParser.ts'),
-            depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
-            bundling: {
-                externalModules: ['aws-sdk'],
-                minify: false,
-            },
+            entry: path.join(lambdaPath, 'importFileParser.ts'),
             environment: {
                 CATALOG_QUEUE_URL: CATALOG_QUEUE_URL,
             },
