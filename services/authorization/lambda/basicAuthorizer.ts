@@ -3,7 +3,7 @@ import { SQSEvent } from 'aws-lambda';
 const richardpickman = 'TEST_PASSWORD';
 
 export const handler = async (event: SQSEvent) => {
-    console.log('Processing catalog items...');
+    console.log('This handler is called by API Gateway');
 
     return {
         statusCode: 201,
