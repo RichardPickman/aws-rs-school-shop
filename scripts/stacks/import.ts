@@ -1,13 +1,13 @@
 import { Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
 import { AuthorizationType, Cors, LambdaIntegration, RestApi, TokenAuthorizer } from 'aws-cdk-lib/aws-apigateway';
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Bucket, EventType } from 'aws-cdk-lib/aws-s3';
 import { LambdaDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import path from 'path';
-import { CATALOG_QUEUE_URL, IMPORT_BUCKET_NAME, QUEUE_SQS_ARN } from '../../constants';
+import { IMPORT_BUCKET_NAME } from '../../constants';
 import { commonLambdaProps, rootDir } from './helpers';
 
 const lambdaPath = path.join(rootDir, 'services', 'import', 'lambda');
@@ -16,22 +16,31 @@ export class ImportServiceStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        // Import values from other stacks.
         const authorizationHandlerArn = Fn.importValue('AuthorizationHandlerArn');
+        const catalogQueueUrl = Fn.importValue('CatalogItemsQueueUrl');
+
         const authorizationHandler = Function.fromFunctionArn(this, 'AuthorizationHandler', authorizationHandlerArn);
 
-        // Token authorizer.
-        const tokenAuthorizer = new TokenAuthorizer(this, 'TokenAuthorizer', {
+        const integrationRole = new Role(this, 'authExecutionRole', {
+            assumedBy: new ServicePrincipal('apigateway.amazonaws.com'),
+        });
+
+        authorizationHandler.grantInvoke(integrationRole);
+
+        const authorizer = new TokenAuthorizer(this, 'TokenAuthorizer', {
             handler: authorizationHandler,
             authorizerName: 'TokenAuthorizer',
+            assumeRole: integrationRole,
         });
+
+        const bucket = Bucket.fromBucketName(this, 'ImportBucket', IMPORT_BUCKET_NAME);
 
         const importProductsFile = new NodejsFunction(this, 'ImportProductsFile', {
             ...commonLambdaProps,
             entry: path.join(lambdaPath, 'importProductsFile.ts'),
             environment: {
                 ...commonLambdaProps.environment,
-                BUCKET_NAME: IMPORT_BUCKET_NAME,
+                BUCKET_NAME: bucket.bucketName,
             },
         });
 
@@ -40,11 +49,9 @@ export class ImportServiceStack extends Stack {
             timeout: Duration.seconds(10),
             entry: path.join(lambdaPath, 'importFileParser.ts'),
             environment: {
-                CATALOG_QUEUE_URL: CATALOG_QUEUE_URL,
+                CATALOG_QUEUE_URL: catalogQueueUrl,
             },
         });
-
-        const bucket = Bucket.fromBucketName(this, 'ImportBucket', IMPORT_BUCKET_NAME);
 
         const bucketPolicy = new PolicyStatement({
             actions: ['s3:PutObject', 's3:GetObject', 's3:ListBucket', 's3:DeleteObject', 's3:CopyObject'],
@@ -53,7 +60,7 @@ export class ImportServiceStack extends Stack {
 
         const queuePolicy = new PolicyStatement({
             actions: ['sqs:SendMessage'],
-            resources: [QUEUE_SQS_ARN],
+            resources: ['*'],
         });
 
         const authorizationPolicy = new PolicyStatement({
@@ -81,8 +88,8 @@ export class ImportServiceStack extends Stack {
         });
 
         rootEndpoint.addMethod('GET', new LambdaIntegration(importProductsFile), {
+            authorizer,
             authorizationType: AuthorizationType.CUSTOM,
-            authorizer: tokenAuthorizer,
         });
     }
 }
