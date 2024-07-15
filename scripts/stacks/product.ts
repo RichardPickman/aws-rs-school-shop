@@ -2,7 +2,6 @@ import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
 import { AccountPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { SubscriptionFilter, Topic } from 'aws-cdk-lib/aws-sns';
@@ -10,24 +9,11 @@ import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import path from 'path';
-import { PRINCIPAL_ID, PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME, SUBSCRIPTION_EMAIL } from '../../constants';
+import { PRODUCTS_TABLE_NAME, STOCK_TABLE_NAME, SUBSCRIPTION_EMAIL } from '../../constants';
+import { commonLambdaProps } from './helpers';
 
 const rootDir = path.join(__dirname, '../../');
 const lambdaPath = path.join(rootDir, 'services', 'product', 'lambda');
-
-const commonLambdaProps = {
-    runtime: Runtime.NODEJS_20_X,
-    projectRoot: rootDir,
-    depsLockFilePath: path.join(rootDir, 'pnpm-lock.yaml'),
-    environment: {
-        PRODUCTS_TABLE_NAME: PRODUCTS_TABLE_NAME,
-        STOCK_TABLE_NAME: STOCK_TABLE_NAME,
-    },
-    bundling: {
-        externalModules: ['aws-sdk'],
-        minify: false,
-    },
-};
 
 export class ProductsServiceStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -93,7 +79,7 @@ export class ProductsServiceStack extends Stack {
         });
 
         // Principal for the topic policy.
-        const accessPrincipal = new AccountPrincipal(PRINCIPAL_ID);
+        const accessPrincipal = new AccountPrincipal(this.account);
 
         // Policy for the lambda functions.
         const productTopicPolicy = new PolicyStatement({
@@ -155,8 +141,8 @@ export class ProductsServiceStack extends Stack {
         populateEndpoit.addMethod('POST', new LambdaIntegration(populateProductHandler));
 
         // Outputs.
-        new CfnOutput(this, 'Products table', { value: productsTable.tableName });
-        new CfnOutput(this, 'Queue Url', { value: catalogItemsQueue.queueUrl });
-        new CfnOutput(this, 'Stock table', { value: stocksTable.tableName });
+        new CfnOutput(this, 'Products table', { value: productsTable.tableName, exportName: 'ProductsTableName' });
+        new CfnOutput(this, 'Queue Url', { value: catalogItemsQueue.queueUrl, exportName: 'CatalogItemsQueueUrl' });
+        new CfnOutput(this, 'Stock table', { value: stocksTable.tableName, exportName: 'StockTableName' });
     }
 }
