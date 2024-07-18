@@ -1,5 +1,12 @@
 import { Duration, Fn, Stack, StackProps } from 'aws-cdk-lib';
-import { AuthorizationType, Cors, LambdaIntegration, RestApi, TokenAuthorizer } from 'aws-cdk-lib/aws-apigateway';
+import {
+    AuthorizationType,
+    Cors,
+    LambdaIntegration,
+    ResponseType,
+    RestApi,
+    TokenAuthorizer,
+} from 'aws-cdk-lib/aws-apigateway';
 import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -84,6 +91,13 @@ export class ImportServiceStack extends Stack {
             defaultCorsPreflightOptions: {
                 allowOrigins: Cors.ALL_ORIGINS,
                 allowMethods: Cors.ALL_METHODS,
+            },
+        });
+
+        api.addGatewayResponse('Default 4xx response', {
+            type: ResponseType.DEFAULT_4XX,
+            responseHeaders: {
+                'Access-Control-Allow-Origin': "'*'",
             },
         });
 
