@@ -9,5 +9,3 @@ export const STOCK_TABLE_NAME = process.env.STOCK_TABLE_NAME || '';
 
 export const IMPORT_BUCKET_NAME = process.env.IMPORT_BUCKET_NAME || '';
 export const CATALOG_QUEUE_URL = process.env.CATALOG_QUEUE_URL || '';
-export const PRINCIPAL_ID = process.env.PRINCIPAL_ID || '';
-export const QUEUE_SQS_ARN = process.env.QUEUE_SQS_ARN || '';
