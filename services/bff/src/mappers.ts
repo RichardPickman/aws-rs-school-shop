@@ -10,6 +10,7 @@ type RequestConfig = Record<
 
 export const recipients = {
   cart: process.env.CART_ENDPOINT,
+  cart_checkout: process.env.CART_CHECKOUT_ENDPOINT,
   product: process.env.PRODUCT_ENDPOINT,
 };
 
