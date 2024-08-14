@@ -2,7 +2,7 @@
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
 
-FROM node:22-alpine As development
+FROM node:20-alpine As development
 
 WORKDIR /usr/src/app
 
@@ -19,7 +19,7 @@ COPY . .
 # BUILD FOR PRODUCTION
 ###################
 
-FROM node:22-alpine As build
+FROM node:20-alpine As build
 
 WORKDIR /usr/src/app
 
@@ -37,7 +37,7 @@ RUN npm ci --only=production && npm cache clean --force
 # PRODUCTION
 ###################
 
-FROM node:22-alpine As production
+FROM node:20-alpine As production
 
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 
