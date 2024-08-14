@@ -39,7 +39,7 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent) => {
 
     const decoded = Buffer.from(value, 'base64').toString('ascii');
 
-    const [username, password] = decoded.split('=');
+    const [username, password] = decoded.split(':');
 
     if (password !== richardpickman) {
         console.log('Password does not match with decoded value: ', decoded);
