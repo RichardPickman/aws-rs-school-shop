@@ -1,8 +1,10 @@
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   All,
   Controller,
   HttpException,
   HttpStatus,
+  Inject,
   Req,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -31,10 +33,10 @@ const handleFetch = async (url: string, config: RequestInit) => {
 
 @Controller('*')
 export class AppController {
-  constructor() {}
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
   @All()
-  handleEndpoint(@Req() req: Request) {
+  async handleEndpoint(@Req() req: Request) {
     const [path] = req.url.split('?');
     const paths = path.split('/').filter(Boolean);
     const [cart, cart_checkout, product] = Object.keys(recipients);
@@ -54,10 +56,28 @@ export class AppController {
     }
 
     if (paths[0] === product) {
-      return handleFetch(
+      const cachedProductList = await this.cacheManager.get('product');
+
+      if (req.method === 'GET' && cachedProductList) {
+        const list = cachedProductList as unknown[];
+
+        console.log('Cached product list. Length: ', list.length);
+
+        return cachedProductList;
+      }
+
+      const response = await handleFetch(
         recipients.product,
         getConfig(req.method, req.body, req.headers),
       );
+
+      if (req.method === 'GET') {
+        console.log('No cached product list. Caching...');
+
+        await this.cacheManager.set('product', response, 120000);
+      }
+
+      return response;
     }
 
     throw new HttpException('Cannot process request', HttpStatus.BAD_GATEWAY);
